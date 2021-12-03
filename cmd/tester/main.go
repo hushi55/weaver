@@ -159,6 +159,31 @@ func test_pointer_array(x [2]*int) {}
 //go:noinline
 func test_array_pointer(x *[2]int) {}
 
+type ParamType struct {
+	y bool
+	x int
+	z float64
+	s string
+}
+
+//go:noinline
+func test_struct_type_point(x *ParamType) {}
+
+//go:noinline
+func test_struct_type(x ParamType) {}
+
+//go:noinline
+func test_struct_combined_type(x ParamType, y bool, z int) {}
+
+//go:noinline
+func test_struct_combined_type_2(x *ParamType, y bool, z int) {}
+
+//go:noinline
+func test_channel_type(x <-chan ParamType) {}
+
+//go:noinline
+func test_dotdotdot_type(...interface{}) {}
+
 func main() {
 
 	//TODO: Read the values to pass into these functions from a file
@@ -213,10 +238,22 @@ func main() {
 	var x byte = 'a'
 	test_single_pointer(&x)
 
-	var y int = 4
+	var y = 4
 	test_pointer_array([2]*int{&y, &y})
 
 	var z [2]int
 	test_array_pointer(&z)
+
+	var t ParamType
+
+	test_struct_type_point(&t)
+	test_struct_type(t)
+	test_struct_combined_type(t, false, 10)
+	test_struct_combined_type_2(&t, false, 10)
+
+	//c := make(chan ParamType)
+	//test_channel_type(nil)
+
+	test_dotdotdot_type(1, 2.0, "testxxx", t)
 
 }

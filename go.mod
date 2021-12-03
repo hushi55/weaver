@@ -1,6 +1,6 @@
-module github.com/grantseltzer/weaver
+module hs_weaver
 
-go 1.13
+go 1.16
 
 require (
 	github.com/iovisor/gobpf v0.0.0-20200227201708-df376f8c6350

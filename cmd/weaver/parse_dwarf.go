@@ -3,6 +3,7 @@ package main
 import (
 	"debug/dwarf"
 	"debug/elf"
+	"hs_weaver/cmd/weaver/func_type"
 	"strings"
 )
 
@@ -18,9 +19,10 @@ type function_type struct {
 type function_param struct {
 	Name           string
 	TypeName       string
-	StartingOffset uint
+	StartingOffset int64
 	TypeSize       int64 // how much space it takes on the stack, in bytes
 	IsReturn       bool
+	Type           func_type.Type
 }
 
 var entryIndex = map[string]*dwarf.Entry{}
@@ -32,28 +34,47 @@ func getSizesAndStackOffsets(ir *Gotir, data *dwarf.Data) {
 	// parameter and their starting offsets
 
 	for _, f := range ir.Functions {
+		var fields []func_type.Var
 
-		for _, param := range f.Params {
+		m := strings.HasPrefix(f.Name, "main.")
+
+		if !m {
+			continue
+		}
+
+		for idx := range f.Params {
+
 			// Use TypeName to find TypeSize, then afterwards calculate StartingOffset
-			entry := entryIndex[param.TypeName]
+			entry := entryIndex[f.Params[idx].TypeName]
 			if entry == nil {
 				continue
+			}
+
+			if t, err := func_type.ReadType(data, idx, entry.Offset); err == nil {
+				f.Params[idx].Type = t
 			}
 
 			// Look for size
 			for i := range entry.Field {
 				if entry.Field[i].Attr == dwarf.AttrByteSize {
-					param.TypeSize = entry.Field[i].Val.(int64)
+					f.Params[idx].TypeSize = entry.Field[i].Val.(int64)
 				}
 			}
 
-			if param.TypeSize == 0 && strings.HasPrefix(param.Name, "*") {
-				param.TypeSize = 8
+			if f.Params[idx].TypeSize == 0 && strings.HasPrefix(f.Params[idx].TypeName, "*") {
+				f.Params[idx].TypeSize = 8
 			}
 
+			fields = append(fields, f.Params[idx].Type)
 			// TODO: Otherwise just don't support it for now
 
 		}
+
+		offsets := func_type.Offsetsof(fields)
+		for idx := range f.Params {
+			f.Params[idx].StartingOffset = offsets[idx]
+		}
+
 	}
 }
 
@@ -118,6 +139,7 @@ entryReadLoop:
 		if entry.Tag == dwarf.TagSubprogram {
 			currentlyReadingFunction = readFunctionInit(entry)
 		}
+
 		// If currently reading the parameters of a function
 		if currentlyReadingFunction != nil && entry.Tag == dwarf.TagFormalParameter {
 			err = readFunctionParameter(typeReader, entry, currentlyReadingFunction)
