@@ -1,4 +1,4 @@
-module hs_weaver
+module weaver
 
 go 1.16
 

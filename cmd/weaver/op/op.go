@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"hs_weaver/cmd/weaver/util"
 	"io"
+	"weaver/cmd/weaver/util"
 )
 
 // Opcode represent a DWARF stack program instruction.

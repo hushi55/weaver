@@ -3,8 +3,8 @@ package main
 import (
 	"debug/dwarf"
 	"debug/elf"
-	"hs_weaver/cmd/weaver/func_type"
 	"strings"
+	"weaver/cmd/weaver/func_type"
 )
 
 type Gotir struct {

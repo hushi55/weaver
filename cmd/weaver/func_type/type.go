@@ -15,10 +15,10 @@ import (
 	"debug/dwarf"
 	"fmt"
 	"go/types"
-	"hs_weaver/cmd/weaver/op"
-	"hs_weaver/cmd/weaver/util"
 	"reflect"
 	"strconv"
+	"weaver/cmd/weaver/op"
+	"weaver/cmd/weaver/util"
 )
 
 const (
